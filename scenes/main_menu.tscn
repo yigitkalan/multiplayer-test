@@ -1,0 +1,90 @@
+[gd_scene load_steps=5 format=3 uid="uid://dpk1u0ir03fuj"]
+
+[ext_resource type="Script" uid="uid://dsn7hfvycqjye" path="res://scripts/LobbyMenu.gd" id="1_l6cm7"]
+
+[sub_resource type="Gradient" id="Gradient_rhts7"]
+offsets = PackedFloat32Array(0)
+colors = PackedColorArray(0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_06t4h"]
+gradient = SubResource("Gradient_rhts7")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rhts7"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture1D_06t4h")
+
+[node name="MarginContainer" type="MarginContainer" parent="TextureRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 200
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 200
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TextureRect/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 154
+script = ExtResource("1_l6cm7")
+
+[node name="Menu" type="VBoxContainer" parent="TextureRect/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 39
+alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Label" type="Label" parent="TextureRect/MarginContainer/HBoxContainer/Menu"]
+layout_mode = 2
+text = "
+"
+horizontal_alignment = 1
+
+[node name="HostButton" type="Button" parent="TextureRect/MarginContainer/HBoxContainer/Menu"]
+layout_mode = 2
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
+text = "HOST"
+
+[node name="JoinButton" type="Button" parent="TextureRect/MarginContainer/HBoxContainer/Menu"]
+layout_mode = 2
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
+text = "JOIN
+"
+
+[node name="TextEdit" type="TextEdit" parent="TextureRect/MarginContainer/HBoxContainer/Menu"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+placeholder_text = "Username"
+
+[node name="DisconnectButton" type="Button" parent="TextureRect/MarginContainer/HBoxContainer/Menu"]
+visible = false
+layout_mode = 2
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
+text = "Disconnect
+"
+
+[node name="PlayersInfo" type="Label" parent="TextureRect/MarginContainer/HBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
