@@ -1,12 +1,16 @@
-extends HBoxContainer
+extends Control
 
-@onready var host_button: Button = $Menu/HostButton
-@onready var join_button: Button = $Menu/JoinButton
-@onready var disconnect_button: Button = $Menu/DisconnectButton
-@onready var label: Label = $Menu/Label
-@onready var players_info: Label = $PlayersInfo
-@onready var text_edit: TextEdit = $Menu/TextEdit
+@onready var home: VBoxContainer = $TextureRect/Panel/SubMenus/Home
+@onready var lobby: HBoxContainer = $TextureRect/Panel/SubMenus/Lobby
 
+@onready var start_game: Button = $TextureRect/Panel/SubMenus/Lobby/HBoxContainer/StartGame
+@onready var players_info: VBoxContainer = $TextureRect/Panel/SubMenus/Lobby/PlayerInfo
+@onready var join_button: Button = $TextureRect/Panel/SubMenus/Home/JoinButton
+@onready var disconnect_button: Button = $TextureRect/Panel/SubMenus/Lobby/HBoxContainer/DisconnectButton
+@onready var host_button: Button = $TextureRect/Panel/SubMenus/Home/HostButton
+@onready var text_edit: TextEdit = $TextureRect/Panel/SubMenus/Home/TextEdit
+@onready var label: Label = $TextureRect/Panel/SubMenus/Lobby/HBoxContainer/Label
+@onready var players: Label = $TextureRect/Panel/SubMenus/Lobby/PlayerInfo/Players
 func _ready() -> void:
 	# Connect UI
 	host_button.pressed.connect(_on_host_pressed)
@@ -31,20 +35,20 @@ func _on_host_pressed() -> void:
 	if error != OK:
 		label.text = "Failed to host!"
 		return
+	_show_lobby_menu()
 	
-	_show_in_lobby("Hosting lobby...")
 
 func _on_join_pressed() -> void:
+	label.text = "Connecting..."
 	var error = Lobby.join_game("127.0.0.1")
 	if error != OK:
 		label.text = "Failed to join!"
 		return
-	
-	label.text = "Connecting..."
-	_hide_menu_buttons()
+	_show_lobby_menu()
 
 func _on_disconnect_pressed() -> void:
 	Lobby.leave_lobby()
+	_show_main_menu()
 
 func _on_username_changed() -> void:
 	Lobby.player_info["name"] = text_edit.text
@@ -55,18 +59,20 @@ func _on_username_changed() -> void:
 
 func _on_player_joined(peer_id: int, player_info: Dictionary) -> void:
 	var player_name = player_info.get("name", "Unknown")
-	_add_log("%s joined" % player_name)
-	
 	# Update status for local player
 	if peer_id == Lobby.get_local_peer_id():
+		players.text = ""
 		if Lobby.is_host():
+			start_game.visible = true
 			label.text = "Hosting (%d players)" % Lobby.players.size()
 		else:
+			start_game.visible = false
 			label.text = "Connected (%d players)" % Lobby.players.size()
 		_show_disconnect_button()
+		players_info.visible = true
 	else:
-		# Update player count
 		_update_player_count()
+	_add_log("%s joined" % player_name)
 
 func _on_player_left(peer_id: int, player_info: Dictionary, reason: String) -> void:
 	var player_name = player_info.get("name", "Unknown")
@@ -93,20 +99,18 @@ func _on_server_closed() -> void:
 # ============================================================================
 
 func _show_main_menu() -> void:
-	host_button.visible = true
-	join_button.visible = true
-	disconnect_button.visible = false
+	home.visible = true
+	lobby.visible = false
 	label.text = "Main Menu"
-	players_info.text = ""
-
-func _show_in_lobby(status_text: String) -> void:
-	_hide_menu_buttons()
-	_show_disconnect_button()
-	label.text = status_text
-
-func _hide_menu_buttons() -> void:
-	host_button.visible = false
-	join_button.visible = false
+	
+func _show_lobby_menu() -> void:
+	home.visible = false
+	lobby.visible = true
+	if Lobby.is_host():
+		start_game.visible = true
+	else:
+		start_game.visible = false
+	
 
 func _show_disconnect_button() -> void:
 	disconnect_button.visible = true
@@ -118,7 +122,7 @@ func _update_player_count() -> void:
 		label.text = "Connected (%d players)" % Lobby.players.size()
 
 func _add_log(message: String) -> void:
-	if players_info.text.is_empty():
-		players_info.text = message
+	if players.text.is_empty():
+		players.text = message
 	else:
-		players_info.text += "\n" + message
+		players.text += "\n" + message
