@@ -1,18 +1,17 @@
+
 extends Node
 # Autoload named Lobby
 
-# Unified signals - no duplication
 signal player_joined(peer_id: int, player_info: Dictionary)
 signal player_left(peer_id: int, player_info: Dictionary, reason: String)
 signal server_closed()
 
-const PORT = 7000
-const DEFAULT_SERVER_IP = "127.0.0.1"
-const MAX_CONNECTIONS = 20
+const PORT := 7000
+const DEFAULT_SERVER_IP := "127.0.0.1"
+const MAX_CONNECTIONS := 20
 
-var players = {}
-var player_info = {"name": "Name"}
-var players_loaded = 0
+var players: Dictionary = {}  # {peer_id: player_info}
+var player_info: Dictionary = {"name": "Name"}
 
 func _ready():
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -21,22 +20,28 @@ func _ready():
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 
+# ============================================================================
+# PUBLIC API
+# ============================================================================
+
 func is_host() -> bool:
 	return multiplayer.is_server()
 
 func is_in_lobby() -> bool:
-	return multiplayer.multiplayer_peer != null and not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
+	return multiplayer.multiplayer_peer != null and not (multiplayer.multiplayer_peer is OfflineMultiplayerPeer)
 
 func get_local_peer_id() -> int:
 	return multiplayer.get_unique_id() if is_in_lobby() else 0
 
 func create_game() -> int:
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(PORT, MAX_CONNECTIONS)
+	var peer := ENetMultiplayerPeer.new()
+	var error := peer.create_server(PORT, MAX_CONNECTIONS)
 	if error:
 		return error
 	
 	multiplayer.multiplayer_peer = peer
+	
+	# Host registers locally
 	players[1] = player_info
 	player_joined.emit(1, player_info)
 	return OK
@@ -45,8 +50,8 @@ func join_game(address: String = "") -> int:
 	if address.is_empty():
 		address = DEFAULT_SERVER_IP
 	
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_client(address, PORT)
+	var peer := ENetMultiplayerPeer.new()
+	var error := peer.create_client(address, PORT)
 	if error:
 		return error
 	
@@ -57,47 +62,52 @@ func leave_lobby():
 	if not is_in_lobby():
 		return
 	
-	var my_id = get_local_peer_id()
-	var my_info = player_info.duplicate()
+	var my_id := get_local_peer_id()
+	var my_info := player_info.duplicate(true)
 	
 	if is_host():
-		# Host is leaving - close the entire server
-		_broadcast_server_closing.rpc()
-		await get_tree().create_timer(0.1).timeout
+		# Host closing = everyone disconnects
+		_server_shutdown.rpc()
 	else:
-		# Client leaving - notify server
-		_notify_graceful_leave.rpc_id(1, my_info)
-		await get_tree().create_timer(0.1).timeout
+		# Client leaving gracefully
+		_client_leaving.rpc_id(1, my_info)
 	
-	# Clean up and emit locally
+	await get_tree().create_timer(0.1).timeout
 	_cleanup()
-	player_left.emit(my_id, my_info, "left_gracefully")
 
 # ============================================================================
 # MULTIPLAYER CALLBACKS
 # ============================================================================
 
-func _on_peer_connected(id: int):
-	# Send my info to the newly connected peer
-	_register_player.rpc_id(id, player_info)
+func _on_peer_connected(id: int) -> void:
+	# Only server needs to do anything here
+	if not multiplayer.is_server():
+		return
+	
+	# New peer connected - they'll send their info via RPC
+	print("Peer %d connected (waiting for registration)" % id)
 
-func _on_peer_disconnected(id: int):
-	# Someone disconnected (could be graceful or crash)
+func _on_peer_disconnected(id: int) -> void:
+	# Only server handles disconnections
+	if not multiplayer.is_server():
+		return
+	
+	# Player crashed or lost connection (not graceful)
 	if players.has(id):
-		var disconnected_info = players[id]
+		var info = players[id]
 		players.erase(id)
-		player_left.emit(id, disconnected_info, "disconnected")
+		
+		# Notify everyone (including server)
+		_player_left_broadcast.rpc(id, info, "disconnected")
 
-func _on_connected_to_server():
-	# I successfully connected as a client
-	var my_id = get_local_peer_id()
-	players[my_id] = player_info
-	player_joined.emit(my_id, player_info)
+func _on_connected_to_server() -> void:
+	# Client successfully connected - send our info
+	_register_player.rpc_id(1, player_info)
 
-func _on_connection_failed():
+func _on_connection_failed() -> void:
 	_cleanup()
 
-func _on_server_disconnected():
+func _on_server_disconnected() -> void:
 	_cleanup()
 	server_closed.emit()
 
@@ -105,63 +115,64 @@ func _on_server_disconnected():
 # RPCs
 # ============================================================================
 
+# Client → Server: "Here's my player info"
 @rpc("any_peer", "call_remote", "reliable")
-func _register_player(new_player_info: Dictionary):
-	# Received when a new player connects
-	var new_player_id = multiplayer.get_remote_sender_id()
-	players[new_player_id] = new_player_info
-	player_joined.emit(new_player_id, new_player_info)
-
-@rpc("any_peer", "call_remote", "reliable")
-func _notify_graceful_leave(leaving_player_info: Dictionary):
-	# Server receives this when a client leaves gracefully
-	if not is_host():
+func _register_player(info: Dictionary) -> void:
+	if not multiplayer.is_server():
 		return
 	
-	var leaving_id = multiplayer.get_remote_sender_id()
+	var peer_id := multiplayer.get_remote_sender_id()
+	players[peer_id] = info
 	
-	# Broadcast to everyone (including server) that this player left
-	_broadcast_player_left.rpc(leaving_id, leaving_player_info)
+	print("Player %d registered: %s" % [peer_id, info.get("name", "Unknown")])
+	
+	# Emit locally on server
+	player_joined.emit(peer_id, info)
+	
+	# Tell ALL clients (including the new one) about this player
+	_player_joined_broadcast.rpc(peer_id, info)
+	
+	# Tell the NEW client about ALL existing players
+	for existing_id in players.keys():
+		if existing_id != peer_id:  # Don't send them their own info again
+			_player_joined_broadcast.rpc_id(peer_id, existing_id, players[existing_id])
 
-@rpc("authority", "call_local", "reliable")
-func _broadcast_player_left(peer_id: int, player_info_data: Dictionary):
-	# Everyone (including host) receives this
-	if players.has(peer_id):
-		players.erase(peer_id)
-	player_left.emit(peer_id, player_info_data, "left_gracefully")
+# Server → All: "A player joined"
+@rpc("authority", "call_remote", "reliable")
+func _player_joined_broadcast(peer_id: int, info: Dictionary) -> void:
+	players[peer_id] = info
+	player_joined.emit(peer_id, info)
 
+# Server → All: "A player left"
 @rpc("authority", "call_local", "reliable")
-func _broadcast_server_closing():
-	# Host is shutting down the server
+func _player_left_broadcast(peer_id: int, info: Dictionary, reason: String) -> void:
+	players.erase(peer_id)
+	player_left.emit(peer_id, info, reason)
+
+# Client → Server: "I'm leaving gracefully"
+@rpc("any_peer", "call_remote", "reliable")
+func _client_leaving(info: Dictionary) -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var peer_id := multiplayer.get_remote_sender_id()
+	players.erase(peer_id)
+	
+	# Notify everyone (including server)
+	_player_left_broadcast.rpc(peer_id, info, "left_gracefully")
+
+# Server → All: "Server is shutting down"
+@rpc("authority", "call_local", "reliable")
+func _server_shutdown() -> void:
 	_cleanup()
 	server_closed.emit()
-
-# ============================================================================
-# GAME LOADING (for when you start the actual game)
-# ============================================================================
-
-@rpc("authority", "call_local", "reliable")
-func load_game(game_scene_path: String):
-	get_tree().change_scene_to_file(game_scene_path)
-
-@rpc("any_peer", "call_local", "reliable")
-func player_loaded():
-	if not is_host():
-		return
-	
-	players_loaded += 1
-	if players_loaded == players.size():
-		# All players loaded - start the game
-		# $/root/Game.start_game()  # Uncomment when you have this
-		players_loaded = 0
 
 # ============================================================================
 # INTERNAL
 # ============================================================================
 
-func _cleanup():
+func _cleanup() -> void:
 	players.clear()
-	players_loaded = 0
 	
 	if multiplayer.multiplayer_peer:
 		multiplayer.multiplayer_peer.close()

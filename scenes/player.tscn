@@ -1,0 +1,46 @@
+[gd_scene load_steps=8 format=3 uid="uid://b2xyd22qyvitu"]
+
+[ext_resource type="Script" uid="uid://dt3nhsns6lfti" path="res://scripts/character_movement.gd" id="1_3vyb7"]
+[ext_resource type="Script" uid="uid://drq2bphy4y2ku" path="res://scripts/player_input.gd" id="2_g2els"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rd3vj"]
+
+[sub_resource type="Gradient" id="Gradient_rd3vj"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(0.33427757, 0.40897298, 0.759999, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_2q6dc"]
+gradient = SubResource("Gradient_rd3vj")
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_3vyb7"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_qhqgy"]
+properties/0/path = NodePath(".:direction")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+script = ExtResource("1_3vyb7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_rd3vj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.07436019, -17.93674)
+texture = SubResource("GradientTexture1D_2q6dc")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_3vyb7")
+visibility_update_mode = 1
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("2_g2els")
+
+[node name="InputSynchronizer" type="MultiplayerSynchronizer" parent="PlayerInput"]
+replication_config = SubResource("SceneReplicationConfig_qhqgy")

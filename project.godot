@@ -11,12 +11,14 @@ config_version=5
 [application]
 
 config/name="multiplayer-test"
+run/main_scene="uid://cc6m20h50k0g4"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Lobby="*res://scripts/Lobby.gd"
+Lobby="*res://scripts/lobby.gd"
+SceneManager="*res://scripts/scene_manager.gd"
 
 [editor_plugins]
 
