@@ -14,7 +14,6 @@ var players: Dictionary = {}  # {peer_id: player_info}
 var player_info: Dictionary = {"name": "Name"}
 
 func _ready():
-	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
@@ -79,14 +78,6 @@ func leave_lobby():
 # MULTIPLAYER CALLBACKS
 # ============================================================================
 
-func _on_peer_connected(id: int) -> void:
-	# Only server needs to do anything here
-	if not multiplayer.is_server():
-		return
-	
-	# New peer connected - they'll send their info via RPC
-	print("Peer %d connected (waiting for registration)" % id)
-
 func _on_peer_disconnected(id: int) -> void:
 	# Only server handles disconnections
 	if not multiplayer.is_server():
@@ -123,8 +114,6 @@ func _register_player(info: Dictionary) -> void:
 	
 	var peer_id := multiplayer.get_remote_sender_id()
 	players[peer_id] = info
-	
-	print("Player %d registered: %s" % [peer_id, info.get("name", "Unknown")])
 	
 	# Emit locally on server
 	player_joined.emit(peer_id, info)

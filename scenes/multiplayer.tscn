@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://cc6m20h50k0g4"]
+[gd_scene load_steps=3 format=3 uid="uid://1ynfwg643qe0"]
 
 [ext_resource type="Script" uid="uid://coykuweg18tue" path="res://scripts/persistent_hud.gd" id="3_pjkx2"]
 
@@ -51,3 +51,7 @@ offset_left = 1046.0
 offset_top = 31.0
 offset_right = 1086.0
 offset_bottom = 71.0
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://d0wig0rls33eu", "uid://dpk1u0ir03fuj")
+spawn_path = NodePath("../SceneContainer")

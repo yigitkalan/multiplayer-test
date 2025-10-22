@@ -49,7 +49,6 @@ func _on_join_pressed():
 		status_label.text = "Failed to connect!"
 		status_label.modulate = Color.RED
 		return
-	
 	# Wait for connection signal
 	# _show_lobby() will be called by _on_player_joined
 
