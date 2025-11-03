@@ -37,7 +37,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubMenus" type="MarginContainer" parent="TextureRect/Panel"]
+[node name="MarginContainer" type="MarginContainer" parent="TextureRect/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,92 +47,33 @@ grow_vertical = 2
 theme_override_constants/margin_left = 350
 theme_override_constants/margin_right = 350
 
-[node name="Home" type="VBoxContainer" parent="TextureRect/Panel/SubMenus"]
+[node name="Home" type="VBoxContainer" parent="TextureRect/Panel/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 39
 alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="TextEdit" type="TextEdit" parent="TextureRect/Panel/SubMenus/Home"]
+[node name="UsernameInput" type="TextEdit" parent="TextureRect/Panel/MarginContainer/Home"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 placeholder_text = "Username"
 
-[node name="HostButton" type="Button" parent="TextureRect/Panel/SubMenus/Home"]
+[node name="HostButton" type="Button" parent="TextureRect/Panel/MarginContainer/Home"]
 layout_mode = 2
 theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
 text = "HOST"
 
-[node name="JoinButton" type="Button" parent="TextureRect/Panel/SubMenus/Home"]
+[node name="JoinButton" type="Button" parent="TextureRect/Panel/MarginContainer/Home"]
 layout_mode = 2
 theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
 theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
 text = "JOIN
 "
 
-[node name="Label" type="Label" parent="TextureRect/Panel/SubMenus/Home"]
+[node name="Label" type="Label" parent="TextureRect/Panel/MarginContainer/Home"]
 layout_mode = 2
 text = "
 "
 horizontal_alignment = 1
-
-[node name="Lobby" type="HBoxContainer" parent="TextureRect/Panel/SubMenus"]
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 200
-
-[node name="HBoxContainer" type="VBoxContainer" parent="TextureRect/Panel/SubMenus/Lobby"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 39
-alignment = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="Label" type="Label" parent="TextureRect/Panel/SubMenus/Lobby/HBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 48
-text = "LOBBY"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StartGame" type="Button" parent="TextureRect/Panel/SubMenus/Lobby/HBoxContainer"]
-visible = false
-layout_mode = 2
-theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
-theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
-text = "Start Game"
-
-[node name="DisconnectButton" type="Button" parent="TextureRect/Panel/SubMenus/Lobby/HBoxContainer"]
-visible = false
-layout_mode = 2
-theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
-theme_override_styles/focus = SubResource("StyleBoxEmpty_rhts7")
-text = "Disconnect
-"
-
-[node name="PlayerInfo" type="VBoxContainer" parent="TextureRect/Panel/SubMenus/Lobby"]
-visible = false
-layout_mode = 2
-alignment = 1
-
-[node name="PlayersLabel" type="Label" parent="TextureRect/Panel/SubMenus/Lobby/PlayerInfo"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "Players"
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="HSeparator" type="HSeparator" parent="TextureRect/Panel/SubMenus/Lobby/PlayerInfo"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Players" type="Label" parent="TextureRect/Panel/SubMenus/Lobby/PlayerInfo"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-horizontal_alignment = 1
-autowrap_mode = 3
