@@ -1,57 +1,45 @@
-[gd_scene load_steps=3 format=3 uid="uid://1ynfwg643qe0"]
+[gd_scene load_steps=4 format=3 uid="uid://1ynfwg643qe0"]
 
+[ext_resource type="PackedScene" uid="uid://dpk1u0ir03fuj" path="res://scenes/main_menu.tscn" id="1_crvko"]
+[ext_resource type="PackedScene" uid="uid://cbonn4i67ewpl" path="res://scenes/lobby_menu.tscn" id="3_36d77"]
 [ext_resource type="Script" uid="uid://coykuweg18tue" path="res://scripts/persistent_hud.gd" id="3_pjkx2"]
 
-[sub_resource type="GDScript" id="GDScript_crvko"]
-script/source = "extends Node
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replce with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
-
-@rpc(\"authority\", \"call_local\", \"reliable\")
-func load_game(game_scene_path: String):
-	get_tree().change_scene_to_file(game_scene_path)
-"
-
 [node name="Multiplayer" type="Node"]
-script = SubResource("GDScript_crvko")
 
 [node name="SceneContainer" type="Node" parent="."]
 
-[node name="PersistentUI" type="CanvasLayer" parent="."]
-layer = -2
+[node name="UILayer" type="CanvasLayer" parent="."]
 
-[node name="PersistentHUD" type="Control" parent="PersistentUI"]
+[node name="MainMenu" parent="UILayer" instance=ExtResource("1_crvko")]
+z_index = 1
+
+[node name="PersistentHUD" type="Control" parent="UILayer"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("3_pjkx2")
 
-[node name="ConnectionStatus" type="Label" parent="PersistentUI/PersistentHUD"]
+[node name="ConnectionStatus" type="Label" parent="UILayer/PersistentHUD"]
 layout_mode = 0
 offset_left = 53.0
 offset_top = 41.0
 offset_right = 93.0
 offset_bottom = 64.0
 
-[node name="NotificationPanel" type="PanelContainer" parent="PersistentUI/PersistentHUD"]
+[node name="NotificationPanel" type="PanelContainer" parent="UILayer/PersistentHUD"]
 layout_mode = 0
 offset_left = 1046.0
 offset_top = 31.0
 offset_right = 1086.0
 offset_bottom = 71.0
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("uid://d0wig0rls33eu", "uid://dpk1u0ir03fuj")
+[node name="LobbyMenu" parent="UILayer" instance=ExtResource("3_36d77")]
+
+[node name="LevelSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://d0wig0rls33eu")
 spawn_path = NodePath("../SceneContainer")
