@@ -15,6 +15,7 @@ gradient = SubResource("Gradient_2q6dc")
 script = ExtResource("1_uwrxv")
 
 [node name="Floor" type="StaticBody2D" parent="."]
+collision_layer = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
 position = Vector2(-2, 307)
