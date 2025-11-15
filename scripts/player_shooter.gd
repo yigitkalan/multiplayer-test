@@ -2,7 +2,6 @@ extends Node2D
 
 @onready var player_input: PlayerInput = $"../PlayerInput"
 @onready var bullet_spawner: MultiplayerSpawner = $"../BulletSpawner"
-@export var BULLET_VELOCITY := 400
 const BULLET_SCENE = preload("uid://ssa5260nc2ff")
 
 var next_bullet_direction: Vector2
@@ -14,22 +13,22 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	if player_input.consume_shoot():
-		_spawn_bullet(_calculate_bullet_speed(player_input.get_click_pos()))
+		_spawn_bullet(_calculate_bullet_dir(player_input.get_click_pos()))
 	look_at(player_input.get_click_pos())
 	
 
-func _spawn_bullet(bullet_velocity: Vector2) -> void:
+func _spawn_bullet(bullet_dir: Vector2) -> void:
 	if not multiplayer.is_server():
 		return
 	var bullet : Bullet = BULLET_SCENE.instantiate()
 	bullet.global_position = shooting_point.global_position
-	bullet.set_velocity(bullet_velocity)
+	bullet.set_velocity(bullet_dir * bullet.bullet_stat.velocity)
 	bullet_spawner.add_child(bullet, true)
 		
-func _calculate_bullet_speed(click_pos: Vector2) -> Vector2:
+func _calculate_bullet_dir(click_pos: Vector2) -> Vector2:
 	# click_pos should already be in world coordinates
-	var dir: Vector2 = (click_pos - global_position).normalized()	
-	return dir * BULLET_VELOCITY
+	var dir: Vector2 = (click_pos - global_position).normalized()
+	return dir
 	
 func _calculate_spawn_position() -> Vector2:
 	return global_position + next_bullet_direction * 5000

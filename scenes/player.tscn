@@ -1,8 +1,17 @@
-[gd_scene load_steps=9 format=3 uid="uid://b2xyd22qyvitu"]
+[gd_scene load_steps=14 format=3 uid="uid://b2xyd22qyvitu"]
 
-[ext_resource type="Script" uid="uid://dt3nhsns6lfti" path="res://scripts/character_movement.gd" id="1_3vyb7"]
+[ext_resource type="Script" uid="uid://dt3nhsns6lfti" path="res://scripts/player.gd" id="1_3vyb7"]
 [ext_resource type="Script" uid="uid://drq2bphy4y2ku" path="res://scripts/player_input.gd" id="2_g2els"]
 [ext_resource type="Script" uid="uid://wjqvn3mjonok" path="res://scripts/player_shooter.gd" id="2_qhqgy"]
+[ext_resource type="Script" uid="uid://duqnljlxs85" path="res://resources/player_stat.gd" id="2_tuyoq"]
+[ext_resource type="Script" uid="uid://cbwxn08wwgip3" path="res://scripts/player_health.gd" id="4_dqkch"]
+[ext_resource type="Script" uid="uid://ds1v72aqd1ena" path="res://resources/health_stat.gd" id="5_qlg0r"]
+
+[sub_resource type="Resource" id="Resource_fjrip"]
+script = ExtResource("2_tuyoq")
+movement_velocity = 400
+jump_velocity = 600
+metadata/_custom_type_script = "uid://duqnljlxs85"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qhqgy"]
 size = Vector2(20, 18)
@@ -14,31 +23,38 @@ colors = PackedColorArray(0.33427757, 0.40897298, 0.759999, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_2q6dc"]
 gradient = SubResource("Gradient_rd3vj")
 
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_dqkch"]
-properties/0/path = NodePath(".:position")
-properties/0/spawn = true
-properties/0/replication_mode = 1
-properties/1/path = NodePath(".:rotation")
-properties/1/spawn = true
-properties/1/replication_mode = 1
-properties/2/path = NodePath(".:player_id")
-properties/2/spawn = true
-properties/2/replication_mode = 2
-properties/3/path = NodePath(".:linear_velocity")
-properties/3/spawn = true
-properties/3/replication_mode = 1
-
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_qhqgy"]
 properties/0/path = NodePath(".:direction")
 properties/0/spawn = true
 properties/0/replication_mode = 1
 
-[node name="RigidBody2D" type="RigidBody2D"]
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_dqkch"]
+properties/0/path = NodePath(".:player_id")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:linear_velocity")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:position")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:rotation")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath("PlayerHealth:current_health")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+
+[sub_resource type="Resource" id="Resource_tuyoq"]
+script = ExtResource("5_qlg0r")
+max_health = 2
+metadata/_custom_type_script = "uid://ds1v72aqd1ena"
+
+[node name="Body" type="RigidBody2D"]
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_3vyb7")
-movement_velocity = 300.0
-jump_velocity = 600.0
+player_stat = SubResource("Resource_fjrip")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_qhqgy")
@@ -51,7 +67,6 @@ spawn_path = NodePath(".")
 rotation = 0.011181319
 scale = Vector2(0.99999994, 0.99999994)
 script = ExtResource("2_qhqgy")
-BULLET_VELOCITY = 1000
 
 [node name="ShootingPoint" type="Marker2D" parent="Shooter"]
 position = Vector2(29.998123, -0.3354326)
@@ -59,9 +74,6 @@ position = Vector2(29.998123, -0.3354326)
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.07436019, -17.93674)
 texture = SubResource("GradientTexture1D_2q6dc")
-
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_dqkch")
 
 [node name="PlayerInput" type="Node2D" parent="."]
 script = ExtResource("2_g2els")
@@ -72,3 +84,10 @@ replication_config = SubResource("SceneReplicationConfig_qhqgy")
 [node name="GroundCheck" type="RayCast2D" parent="."]
 target_position = Vector2(0, 20)
 collision_mask = 4
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_dqkch")
+
+[node name="PlayerHealth" type="Node2D" parent="."]
+script = ExtResource("4_dqkch")
+health_stat = SubResource("Resource_tuyoq")

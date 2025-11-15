@@ -1,11 +1,11 @@
+class_name Player
 extends RigidBody2D
 
-@export var movement_velocity := 1000.0
-@export var jump_velocity := 400.0:
-	get: return -jump_velocity
-	
+@export var player_stat: PlayerStat
+
 @onready var input: PlayerInput = $PlayerInput
 @onready var ground_check: RayCast2D = $GroundCheck
+@onready var player_health: PlayerHealth = $PlayerHealth
 
 @export var player_id := 1:
 	set(id):
@@ -21,6 +21,7 @@ extends RigidBody2D
 func _ready() -> void:
 	linear_damp = 4.0  # Acts like air resistance/friction
 	lock_rotation = true  # Prevent player from rotating/falling over
+	player_health.died.connect(_on_died)	
 
 
 func _physics_process(delta: float) -> void:
@@ -30,10 +31,24 @@ func _physics_process(delta: float) -> void:
 	var on_floor = ground_check.is_colliding()
 	
 	if input.consume_jump() and on_floor:
-		linear_velocity.y = jump_velocity  # Or use impulse
+		linear_velocity.y = player_stat.jump_velocity  # Or use impulse
 	
 	var dir = input.direction
 	if dir != Vector2.ZERO:
-		linear_velocity.x = dir.x * movement_velocity  # Direct control
+		linear_velocity.x = dir.x * player_stat.movement_velocity  # Direct control
 	else:
-		linear_velocity.x = lerp(linear_velocity.x, 0.0, 0.2)  # Quick sto
+		linear_velocity.x = lerp(linear_velocity.x, 0.0, 0.2)  # Quick stop
+
+
+func _on_died():
+	if  multiplayer.is_server():
+		remove_player.rpc()
+	if input.is_multiplayer_authority():
+		#maybe lose screen or spectator etc. these will be local changes
+		pass
+	
+@rpc("any_peer", "call_local", "reliable")
+func remove_player():
+	set_physics_process(false)
+	hide()
+	

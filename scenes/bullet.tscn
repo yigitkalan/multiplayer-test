@@ -1,8 +1,20 @@
-[gd_scene load_steps=5 format=3 uid="uid://ssa5260nc2ff"]
+[gd_scene load_steps=9 format=3 uid="uid://ssa5260nc2ff"]
 
 [ext_resource type="Script" uid="uid://b5t764pimwmpv" path="res://scripts/bullet.gd" id="1_mkf8s"]
+[ext_resource type="Script" uid="uid://dqfcontbu3piw" path="res://resources/bullet_stat.gd" id="2_y25gk"]
+
+[sub_resource type="Resource" id="Resource_l5glv"]
+script = ExtResource("2_y25gk")
+damage = 1
+damage_range = 20.0
+kick_back_range = 40.0
+cooldown = 1.0
+lifetime = 1.0
+velocity = 800.0
+metadata/_custom_type_script = "uid://dqfcontbu3piw"
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_mkf8s"]
+radius = 6.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_y25gk"]
 
@@ -14,15 +26,21 @@ properties/1/path = NodePath(".:position")
 properties/1/spawn = true
 properties/1/replication_mode = 0
 
-[node name="RigidBody2D" type="RigidBody2D"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_y25gk"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_l5glv"]
+radius = 40.0
+
+[node name="Bullet" type="RigidBody2D"]
 collision_mask = 6
 gravity_scale = 0.0
 contact_monitor = true
 max_contacts_reported = 1
 script = ExtResource("1_mkf8s")
+bullet_stat = SubResource("Resource_l5glv")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-scale = Vector2(0.58298814, 0.58298814)
+[node name="BulletCollider" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_mkf8s")
 
 [node name="MeshInstance2D" type="MeshInstance2D" parent="."]
@@ -33,5 +51,18 @@ mesh = SubResource("SphereMesh_y25gk")
 replication_config = SubResource("SceneReplicationConfig_h1aey")
 
 [node name="Timer" type="Timer" parent="."]
+
+[node name="DamageArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DamageArea"]
+scale = Vector2(1.0134844, 1)
+shape = SubResource("CircleShape2D_y25gk")
+debug_color = Color(0.99396056, 0, 0.23669419, 0.41960785)
+
+[node name="KickBackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KickBackArea"]
+shape = SubResource("CircleShape2D_l5glv")
+debug_color = Color(0.32784164, 0.60924417, 0.39048484, 0.41960785)
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
