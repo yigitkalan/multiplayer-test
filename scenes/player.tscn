@@ -45,7 +45,7 @@ script = ExtResource("2_qhqgy")
 BULLET_VELOCITY = 1000
 
 [node name="ShootingPoint" type="Marker2D" parent="Shooter"]
-position = Vector2(20.998688, -0.23480284)
+position = Vector2(29.998123, -0.3354326)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_qhqgy")
