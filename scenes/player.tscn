@@ -40,6 +40,9 @@ script = ExtResource("1_3vyb7")
 movement_velocity = 300.0
 jump_velocity = 600.0
 
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_qhqgy")
+
 [node name="BulletSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("uid://ssa5260nc2ff")
 spawn_path = NodePath(".")
@@ -52,9 +55,6 @@ BULLET_VELOCITY = 1000
 
 [node name="ShootingPoint" type="Marker2D" parent="Shooter"]
 position = Vector2(29.998123, -0.3354326)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_qhqgy")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.07436019, -17.93674)

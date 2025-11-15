@@ -18,6 +18,8 @@ func kill_bullet():
 		queue_free()
 	
 func kill_bullet_with_target(target: Node):
+	if target is not RigidBody2D:
+		return
 	timer.stop()
 	if multiplayer.is_server():
 		queue_free()
